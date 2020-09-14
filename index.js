@@ -7,7 +7,7 @@ const PowerShell = require('./powershell');
 
 let argv = yargs
   //.alias('s', 'save')
-  .example('Example Url ->', 'https://www.npmjs.com/package/MergeExcelTable')
+  .example('Example Url ->', 'https://www.npmjs.com/package/excelmergetool')
 
   //.usage('Usage: --s <filename>')
   .epilog('copyright @ linju1020@sina.com')
