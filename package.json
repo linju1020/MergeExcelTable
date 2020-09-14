@@ -1,6 +1,6 @@
 {
   "name": "excelmergetool",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "excel批量合成工具",
   "main": "index.js",
   "keywords": [
