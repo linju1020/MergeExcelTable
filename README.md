@@ -19,8 +19,7 @@ npm uninstall -g excelmergetool
 ```
 
 ## 怎样使用
-
-- 查看和生成模板代码
+输入命令，选择需要合并Excel的文件夹（文件夹里面不能包含其他的任何文件）
 ```shell
 excelmergetool
 ```
