@@ -1,15 +1,32 @@
 {
   "name": "excelmergetool",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "excel批量合成工具",
   "main": "index.js",
+  "keywords": [
+    "NodeJS",
+    "Excel"
+  ],
+  "bin": {
+    "excelmergetool": "index.js"
+  },
+  "preferGlobal": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js"
   },
-  "author": "cmyh100",
-  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/linju1020/MergeExcelTable.git"
+  },
+  "author": "linju1020@sina.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/linju1020/MergeExcelTable/issues"
+  },
+  "homepage": "https://github.com/linju1020/MergeExcelTable#readme",
   "dependencies": {
+    "yargs": "^15.4.1",
     "node-xlsx": "^0.14.1"
   }
 }
