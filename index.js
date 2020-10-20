@@ -6,13 +6,13 @@ const fs = require('fs')
 const PowerShell = require('./powershell');
 
 let argv = yargs
-  //.alias('s', 'save')
-  .example('Example Url ->', 'https://www.npmjs.com/package/excelmergetool')
+    //.alias('s', 'save')
+    .example('Example Url ->', 'https://www.npmjs.com/package/excelmergetool')
 
-  //.usage('Usage: --s <filename>')
-  .epilog('copyright @ linju1020@sina.com')
-  .help().argv;
- 
+    //.usage('Usage: --s <filename>')
+    .epilog('copyright @ linju1020@sina.com')
+    .help().argv;
+
 (async function () {
 
     var folderpath = await new PowerShell().BrowseForFolder('选择文件夹');
@@ -22,6 +22,8 @@ let argv = yargs
     // excel文件夹路径（把要合并的文件放在excel文件夹内）
     const _file = folderpath;//`${__dirname}/excel/`
     const _output = folderpath;//`${__dirname}/result/`
+    var __name = "合并.Merge.xlsx";//'Merge'; new Date().getTime();
+
     // 合并数据的结果集
     let dataList = [{
         name: 'sheet1',
@@ -33,46 +35,95 @@ let argv = yargs
         if (err) {
             throw err
         }
+
+        let totalCount = 0;
+        let data_arr = [];
+
         // files是一个数组
         // 每个元素是此目录下的文件或文件夹的名称
         // console.log(`${files}`);
         files.forEach((item, index) => {
             try {
                 // console.log(`${_file}${item}`)
+                if (item == __name || item.indexOf("~$") == 0) {
+                    console.log('\x1B[33m%s\x1b[0m', `丢弃文件：${item}`);
+                    return true
+                };
                 console.log(`开始合并：${item}`)
                 let excelData = xlsx.parse(`${_file}${item}`)
+
                 if (excelData) {
+                    if (excelData[0].data.length > 0) {
+                        data_arr.push(excelData[0].data);
 
-                    //
-                    console.log("length:" + excelData[0].data.length)
-                    /* for (var c in excelData[0].data) {
-                        var comname = excelData[0].data[c][10]
-                            //console.log(comname);
-                        if (comname != '***有限公司-寄售' && comname != '供应商名称') {
-                            console.error(item + "err:" + comname);
-                            return;
-                        }
-                    }  */ 
-                    //
-
-                    if (dataList[0].data.length > 0) {
-                        excelData[0].data.splice(0, 1)
+                        console.log("length:" + excelData[0].data.length);
+                        totalCount += excelData[0].data.length;
                     }
-                    dataList[0].data = dataList[0].data.concat(excelData[0].data)
+                    return true;
                 }
             } catch (e) {
                 console.log(e)
-                console.log('excel表格内部字段不一致，请检查后再合并。')
             }
-        })
+        });
+
+
+        //console.log(data_arr);
+        //return;
+
+        //合并标题
+        let CData = [];
+        data_arr.forEach((item, index) => {
+            item[0].forEach((tit, index2) => {
+                let oldIndex = CData.findIndex(t => t == tit);
+                if (oldIndex < 0) {
+                    CData.push(tit);
+                    oldIndex = CData.length - 1;
+                }
+                item[0][index2] = oldIndex;
+            });
+        });
+        let _dataList = [CData];
+        //合并内容
+        data_arr.forEach((item, index) => {
+            item.forEach((cont_arr, index2) => {
+                if (index2 == 0) return true;
+                let row_data_arr = new Array(CData.length);
+                for (var i = 0; i < CData.length; i++) { row_data_arr[i] = ''; }
+                cont_arr.forEach((cont, index3) => {
+                    let oldIndex = item[0][index3];//拿到该放入的索引
+                    row_data_arr[oldIndex] = cont;
+                });
+                _dataList.push(row_data_arr);
+            });
+        });
+
+        //console.log(_dataList[0]);
+        //return;
+        dataList[0].data = _dataList;
+
+
+
         // 写xlsx
         var buffer = xlsx.build(dataList)
-        var __name = new Date().getTime();
-        fs.writeFile(`${_output}合并.${__name}.xlsx`, buffer, function (err) {
+        let mergeFilePath = `${_output}${__name}`;
+
+
+        if (fs.existsSync(mergeFilePath)) {
+            //删除
+            fs.unlinkSync(mergeFilePath);
+        }
+
+        fs.writeFile(mergeFilePath, buffer, function (err) {
             if (err) {
                 throw err
             }
-            console.log('\x1B[33m%s\x1b[0m', `完成合并：${_output}合并.${__name}.xlsx`)
+            console.log('\x1B[33m%s\x1b[0m', `===================================`)
+            console.log('\x1B[33m%s\x1b[0m', `完成合并：${mergeFilePath}`)
+
+            let intCount = totalCount - data_arr.length + 1;
+            let outCount = _dataList.length;
+
+            console.log('\x1B[33m%s\x1b[0m', `导入文件数${data_arr.length}  导入行数${intCount}  合并后行数${outCount}  ${intCount == outCount ? 'Success:数据量匹配' : 'Err:数据有丢失'}`)
         })
     })
 
