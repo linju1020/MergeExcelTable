@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env node --max-old-space-size=8000
 
 const yargs = require('yargs');
 const xlsx = require('node-xlsx')
@@ -44,22 +44,26 @@ let argv = yargs
         // console.log(`${files}`);
         files.forEach((item, index) => {
             try {
-                // console.log(`${_file}${item}`)
+                //console.log(`${_file}${item}`)
+                console.log(`开始合并：${item}`)
                 if (item == __name || item.indexOf("~$") == 0) {
                     console.log('\x1B[33m%s\x1b[0m', `丢弃文件：${item}`);
                     return true
                 };
-                console.log(`开始合并：${item}`)
-                let excelData = xlsx.parse(`${_file}${item}`)
+                if ((item.split('.')[item.split('.').length - 1]).toLowerCase() == 'xlsx' || (item.split('.')[item.split('.').length - 1]).toLowerCase() == 'xls') {
+                    let excelData = xlsx.parse(`${_file}${item}`)
 
-                if (excelData) {
-                    if (excelData[0].data.length > 0) {
-                        data_arr.push(excelData[0].data);
+                    if (excelData) {
+                        if (excelData[0].data.length > 0) {
+                            data_arr.push(excelData[0].data);
 
-                        console.log("length:" + excelData[0].data.length);
-                        totalCount += excelData[0].data.length;
+                            console.log("length:" + excelData[0].data.length);
+                            totalCount += excelData[0].data.length;
+                        }
+                        return true;
                     }
-                    return true;
+                } else {
+                    console.log('\x1B[33m%s\x1b[0m', `丢弃文件：${item}`);
                 }
             } catch (e) {
                 console.log(e)
@@ -101,18 +105,21 @@ let argv = yargs
         //return;
         dataList[0].data = _dataList;
 
-
+        console.log('处理完毕');
 
         // 写xlsx
         var buffer = xlsx.build(dataList)
+         
         let mergeFilePath = `${_output}${__name}`;
-
+         
 
         if (fs.existsSync(mergeFilePath)) {
             //删除
+            console.log('删除老文件');
             fs.unlinkSync(mergeFilePath);
         }
 
+        console.log('开始保存');
         fs.writeFile(mergeFilePath, buffer, function (err) {
             if (err) {
                 throw err
