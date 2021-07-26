@@ -21,5 +21,7 @@ npm uninstall -g excelmergetool
 ## 怎样使用
 输入命令，选择需要合并Excel的文件夹（文件夹里面不能包含其他的任何文件）
 ```shell
-excelmergetool
+excelmergetool 合并默认第1个工作表
+excelmergetool -i 1 合并第2个工作表
+excelmergetool -name Sheet2 合并工作表名称为Sheet2的所有表
 ```

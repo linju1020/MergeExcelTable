@@ -13,6 +13,17 @@ let argv = yargs
     .epilog('copyright @ linju1020@sina.com')
     .help().argv;
 
+//合并excel表格里面的第几个工作表
+var cindex = argv['i'];
+if (cindex == undefined)
+    cindex = 0;
+console.log('i', cindex);
+
+var cname = argv['n'];
+if (cname == undefined)
+    cname = "";
+console.log('n', cname);
+
 (async function () {
 
     var folderpath = await new PowerShell().BrowseForFolder('选择文件夹');
@@ -22,7 +33,7 @@ let argv = yargs
     // excel文件夹路径（把要合并的文件放在excel文件夹内）
     const _file = folderpath;//`${__dirname}/excel/`
     const _output = folderpath;//`${__dirname}/result/`
-    var __name = "合并.Merge.xlsx";//'Merge'; new Date().getTime();
+    var __name = "合并.Merge." + (cname.length > 0 ? cname : i) + ".xlsx";//'Merge'; new Date().getTime();
 
     // 合并数据的结果集
     let dataList = [{
@@ -46,7 +57,7 @@ let argv = yargs
             try {
                 //console.log(`${_file}${item}`)
                 console.log(`开始合并：${item}`)
-                if (item == __name || item.indexOf("~$") == 0) {
+                if (item.indexOf('合并.Merge') == 0 || item.indexOf("~$") == 0) {
                     console.log('\x1B[33m%s\x1b[0m', `丢弃文件：${item}`);
                     return true
                 };
@@ -54,13 +65,30 @@ let argv = yargs
                     let excelData = xlsx.parse(`${_file}${item}`)
 
                     if (excelData) {
-                        if (excelData[0].data.length > 0) {
-                            data_arr.push(excelData[0].data);
 
-                            console.log("length:" + excelData[0].data.length);
-                            totalCount += excelData[0].data.length;
+                        if (cname.length > 0) {
+                            var Hit = false;
+                            for (q = 0; q < excelData.length; q++) {
+                                if (excelData[q].name == cname) {
+                                    cindex = q;
+                                    Hit = true;
+                                    break;
+                                }
+                            }
+                            if (!Hit)
+                                throw '没有找到 ' + cname + ' 工作表';
                         }
+
+                        var _cData = excelData[cindex].data;
+                        if (_cData.length > 0) {
+                            data_arr.push(_cData);
+
+                            console.log("length:" + _cData.length);
+                            totalCount += _cData.length;
+                        }
+
                         return true;
+
                     }
                 } else {
                     console.log('\x1B[33m%s\x1b[0m', `丢弃文件：${item}`);
@@ -109,9 +137,9 @@ let argv = yargs
 
         // 写xlsx
         var buffer = xlsx.build(dataList)
-         
+
         let mergeFilePath = `${_output}${__name}`;
-         
+
 
         if (fs.existsSync(mergeFilePath)) {
             //删除
