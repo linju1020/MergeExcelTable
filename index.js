@@ -33,7 +33,7 @@ console.log('n', cname);
     // excel文件夹路径（把要合并的文件放在excel文件夹内）
     const _file = folderpath;//`${__dirname}/excel/`
     const _output = folderpath;//`${__dirname}/result/`
-    var __name = "合并.Merge." + (cname.length > 0 ? cname : i) + ".xlsx";//'Merge'; new Date().getTime();
+    var __name = "合并.Merge." + (cname.length > 0 ? cname : cindex) + ".xlsx";//'Merge'; new Date().getTime();
 
     // 合并数据的结果集
     let dataList = [{
