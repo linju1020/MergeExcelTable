@@ -3,7 +3,7 @@
 const yargs = require('yargs');
 const xlsx = require('node-xlsx')
 const fs = require('fs')
-const PowerShell = require('./powershell');
+// const PowerShell = require('./powershell');
 
 let argv = yargs
     //.alias('s', 'save')
@@ -17,23 +17,30 @@ let argv = yargs
 var cindex = argv['i'];
 if (cindex == undefined)
     cindex = 0;
-console.log('i', cindex);
+console.log(`合并第${(cindex + 1)}个工作表`);
 
 var cname = argv['n'];
 if (cname == undefined)
     cname = "";
-console.log('n', cname);
+if (cname.length > 0) {
+    console.log('合并工作表', cname);
+}
 
 (async function () {
 
-    var folderpath = await new PowerShell().BrowseForFolder('选择文件夹');
+    // var folderpath = await new PowerShell().BrowseForFolder('选择文件夹');
+    // console.log(`folderpath: ` + folderpath);
+    // folderpath += "/";
+
+    //直接读取当前命令文件夹
+    var folderpath = process.cwd();
+    if (folderpath.substring(folderpath.length - 1) != '/') folderpath += "/";
     console.log(`folderpath: ` + folderpath);
-    folderpath += "/";
 
     // excel文件夹路径（把要合并的文件放在excel文件夹内）
     const _file = folderpath;//`${__dirname}/excel/`
     const _output = folderpath;//`${__dirname}/result/`
-    var __name = "合并.Merge." + (cname.length > 0 ? cname : cindex) + ".xlsx";//'Merge'; new Date().getTime();
+    var __name = "合并.Merge." + (cname.length > 0 ? cname : cindex) + `.timestamp${new Date().getTime()}` + ".xlsx";//'Merge'; new Date().getTime();
 
     // 合并数据的结果集
     let dataList = [{
@@ -97,6 +104,11 @@ console.log('n', cname);
                 console.log(e)
             }
         });
+
+        if (data_arr.length < 1) {
+            console.log(`没有任何数据`);
+            return;
+        }
 
 
         //console.log(data_arr);
