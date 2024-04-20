@@ -13,6 +13,8 @@ let argv = yargs
     .epilog('copyright @ linju1020@sina.com')
     .help().argv;
 
+console.log('argv', argv);
+
 //合并excel表格里面的第几个工作表
 var cindex = argv['i'];
 if (cindex == undefined)
@@ -25,6 +27,16 @@ if (cname == undefined)
 if (cname.length > 0) {
     console.log('合并工作表', cname);
 }
+
+//从第几行开始(序号)  1:表示第二行开始
+var fr_index = argv['f'];
+if (fr_index == undefined)
+    fr_index = 0;
+else {
+    fr_index = parseInt(fr_index);
+    console.log('从每个表的什么位置开始（序号）', fr_index);
+}
+if (isNaN(fr_index)) fr_index = 0;
 
 (async function () {
 
@@ -88,10 +100,19 @@ if (cname.length > 0) {
 
                         var _cData = excelData[cindex].data;
                         if (_cData.length > 0) {
-                            data_arr.push(_cData);
 
-                            console.log("length:" + _cData.length);
-                            totalCount += _cData.length;
+                            if (fr_index > 0) {
+                                if (_cData.length > fr_index) {
+                                    var __cData = _cData.slice(fr_index);
+                                    data_arr.push(__cData);
+                                    console.log("length:" + __cData.length);
+                                    totalCount += __cData.length;
+                                }
+                            } else {
+                                data_arr.push(_cData);
+                                console.log("length:" + _cData.length);
+                                totalCount += _cData.length;
+                            }
                         }
 
                         return true;
